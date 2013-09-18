@@ -575,7 +575,64 @@ function tapas()
     printconfig
 }
 
-function gettop
+function eat()
+{
+    if [ "$OUT" ] ; then
+        MODVERSION=$(get_build_var CM_VERSION)
+        ZIPFILE=cm-$MODVERSION.zip
+        ZIPPATH=$OUT/$ZIPFILE
+        if [ ! -f $ZIPPATH ] ; then
+            echo "Nothing to eat"
+            return 1
+        fi
+        adb start-server # Prevent unexpected starting server message from adb get-state in the next line
+        if [ $(adb get-state) != device -a $(adb shell busybox test -e /sbin/recovery 2> /dev/null; echo $?) != 0 ] ; then
+            echo "No device is online. Waiting for one..."
+            echo "Please connect USB and/or enable USB debugging"
+            until [ $(adb get-state) = device -o $(adb shell busybox test -e /sbin/recovery 2> /dev/null; echo $?) = 0 ];do
+                sleep 1
+            done
+            echo "Device Found.."
+        fi
+    if (adb shell cat /system/build.prop | grep -q "ro.cm.device=$CM_BUILD");
+    then
+        # if adbd isn't root we can't write to /cache/recovery/
+        adb root
+        sleep 1
+        adb wait-for-device
+        # CWM command
+        cat << EOF > /tmp/command
+--sideload
+EOF
+        # TWRP command
+        cat << EOF > /tmp/openrecoveryscript
+sideload
+EOF
+        if adb push /tmp/command /cache/recovery/ && adb push /tmp/openrecoveryscript /cache/recovery/; then
+            echo "Rebooting into recovery for sideload installation"
+            adb reboot recovery
+            adb kill-server
+            adb wait-for-sideload
+            echo "Device back online, trying to sideload"
+            adb sideload $ZIPPATH
+        fi
+        rm /tmp/command
+    else
+        echo "Nothing to eat"
+        return 1
+    fi
+    return $?
+    else
+        echo "The connected device does not appear to be $CM_BUILD, run away!"
+    fi
+}
+
+function omnom
+{
+    brunch $*
+    eat
+}
+
 {
     local TOPFILE=build/core/envsetup.mk
     if [ -n "$TOP" -a -f "$TOP/$TOPFILE" ] ; then
