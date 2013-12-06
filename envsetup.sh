@@ -1720,7 +1720,7 @@ function cmrebase() {
         echo "      They consist on a series of numbers and slashes, after the text"
         echo "      refs/changes. For example, the ID in the following command is 26/8126/2"
         echo ""
-        echo "      git[...]ges_apps_Camera refs/changes/26/8126/2 && git cherry-pick FETCH_HEAD"
+        echo "
         echo ""
         return
     fi
@@ -1898,8 +1898,6 @@ function fixup_common_out_dir() {
     fi
 }
 
-
->>>>>>> e879082... envsetup: drop unnecesary exports
 # Force JAVA_HOME to point to java 1.6 if it isn't already set
 function set_java_home() {
     if [ ! "$JAVA_HOME" ]; then
